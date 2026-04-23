@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>TradingFast | Binary Options with Candlestick Chart</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #0a0c12; color: #eef2ff; padding: 16px; transition: background 0.3s, color 0.3s; }
+        body.light { background: #f5f7fb; color: #1e293b; }
+        .app-container { max-width: 1400px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; background: #151b26; backdrop-filter: blur(12px); padding: 12px 24px; border-radius: 48px; margin-bottom: 24px; border: 1px solid #2a2e3a; }
+        body.light .header { background: rgba(255,255,255,0.7); border-color: rgba(0,0,0,0.05); }
+        .logo h1 { font-size: 1.6rem; background: linear-gradient(135deg, #6ee7b7, #4CAF50); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .user-info { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+        .balance-card { background: #1f2937; padding: 8px 18px; border-radius: 40px; font-weight: 600; }
+        body.light .balance-card { background: #e8f5e9; color: #2e7d32; }
+        .dark-toggle { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #facc15; padding: 8px; width: 40px; }
+        body.light .dark-toggle { color: #4a5568; }
+        .menu-btn { background: none; border: none; font-size: 1.8rem; cursor: pointer; color: #e2e8f0; }
+        body.light .menu-btn { color: #4a5568; }
+        .dropdown { position: relative; display: inline-block; }
+        .dropdown-content { display: none; position: absolute; right: 0; top: 40px; background: #151b26; min-width: 180px; border-radius: 24px; border: 1px solid #2a2e3a; z-index: 100; }
+        body.light .dropdown-content { background: white; border-color: #e2e8f0; }
+        .dropdown-content a { display: flex; align-items: center; gap: 12px; padding: 12px 18px; text-decoration: none; color: #eef2ff; font-weight: 500; }
+        body.light .dropdown-content a { color: #1e293b; }
+        .dropdown-content a:hover { background: #1f2937; }
+        body.light .dropdown-content a:hover { background: #e8f5e9; }
+        .show { display: block; }
+        .trade-dashboard { display: grid; grid-template-columns: 1fr 360px; gap: 24px; margin-bottom: 32px; }
+        .chart-card { background: #151b26; border-radius: 32px; padding: 20px; border: 1px solid #2a2e3a; }
+        body.light .chart-card { background: white; border-color: #edf2f7; }
+        .chart-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
+        .stock-selector { background: #1f2937; padding: 6px 14px; border-radius: 40px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        body.light .stock-selector { background: #f1f5f9; }
+        .current-price { font-size: 1.8rem; font-weight: 700; color: #6ee7b7; }
+        body.light .current-price { color: #2e7d32; }
+        .chart-type-selector { background: #1f2937; border: none; padding: 6px 12px; border-radius: 40px; color: white; font-weight: 500; cursor: pointer; }
+        body.light .chart-type-selector { background: #f1f5f9; color: #1e293b; }
+        .chart-container { width: 100%; height: 420px; position: relative; }
+        canvas { width: 100%; height: 100%; display: block; border-radius: 20px; background: inherit; }
+        .trade-panel { background: #151b26; border-radius: 32px; padding: 24px; border: 1px solid #2a2e3a; }
+        body.light .trade-panel { background: white; border-color: #edf2f7; }
+        .amount-input { width: 100%; padding: 14px; border-radius: 60px; border: 1px solid #2a2e3a; background: #1f2937; color: #eef2ff; margin: 12px 0; }
+        body.light .amount-input { background: #f8fafc; border-color: #e2e8f0; color: #1e293b; }
+        .duration-buttons { display: flex; gap: 12px; margin: 16px 0; flex-wrap: wrap; }
+        .dur-btn { flex: 1; background: #1f2937; border: none; padding: 10px; border-radius: 40px; font-weight: 600; color: #e2e8f0; cursor: pointer; transition: all 0.2s; }
+        body.light .dur-btn { background: #f1f5f9; color: #1e293b; }
+        .dur-btn.active { background: #2e7d32; color: white; box-shadow: 0 2px 8px rgba(46,125,50,0.3); }
+        body.light .dur-btn.active { background: #1b5e20; color: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .trade-actions { display: flex; gap: 16px; margin-top: 20px; }
+        .btn-up, .btn-down { flex: 1; padding: 14px; border: none; border-radius: 60px; font-weight: 700; font-size: 1.2rem; cursor: pointer; }
+        .btn-up { background: #2e7d32; color: white; }
+        .btn-down { background: #c62828; color: white; }
+        .active-trade-info { background: #2a1e2a; padding: 12px; border-radius: 24px; margin: 20px 0; font-size: 0.9rem; color: #fcd34d; }
+        body.light .active-trade-info { background: #fff3e0; color: #bf360c; }
+        @media (max-width: 860px) { .trade-dashboard { grid-template-columns: 1fr; } .current-price { font-size: 1.2rem; } .chart-container { height: 350px; } }
+        .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); backdrop-filter:blur(8px); z-index:2000; align-items:center; justify-content:center; }
+        .modal-card { background:#151b26; border-radius:40px; padding:24px; width:90%; max-width:500px; }
+        body.light .modal-card { background: white; }
+        #stockListModal div { cursor: pointer; transition: background 0.2s; padding: 12px; border-bottom: 1px solid #2a2e3a; display: flex; justify-content: space-between; }
+        body.light #stockListModal div { border-bottom-color: #e2e8f0; }
+        #stockListModal div:hover { background: #2a2e3a; }
+        body.light #stockListModal div:hover { background: #e2e8f0; }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <div class="header">
+        <div class="logo"><h1>Trading<span style="color:#4CAF50;">Fast</span></h1></div>
+        <div class="user-info">
+            <div class="balance-card"><i class="fas fa-wallet"></i> Balance: ₹<span id="balanceDisplay">10000.00</span></div>
+            <button class="dark-toggle" id="darkModeToggle"><i class="fas fa-sun"></i></button>
+            <div class="dropdown">
+                <button class="menu-btn" id="menuBtn"><i class="fas fa-ellipsis-v"></i></button>
+                <div id="dropdownMenu" class="dropdown-content">
+                    <a href="Profile.html"><i class="fas fa-user-circle"></i> Profile</a>
+                    <a href="TradeHistory.html"><i class="fas fa-clock"></i> Trade History</a>
+                    <a href="Payment.html"><i class="fas fa-credit-card"></i> Payment</a>
+                    <a href="Stocks.html"><i class="fas fa-chart-line"></i> Stocks</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="trade-dashboard">
+        <div class="chart-card">
+            <div class="chart-header">
+                <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    <div class="stock-selector" id="stockSelectorBtn">
+                        <i class="fas fa-chart-simple"></i> <span id="selectedStockName">Bitcoin</span> <span id="selectedStockSym">(BTC)</span> <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="current-price" id="currentPriceLabel">₹0.00</div>
+                    <select id="chartTypeSelect" class="chart-type-selector">
+                        <option value="candle">📊 Candlestick</option>
+                        <option value="bar">📈 Bar Chart</option>
+                        <option value="line">🔷 Line Chart</option>
+                    </select>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="priceCanvas"></canvas>
+            </div>
+        </div>
+        <div class="trade-panel">
+            <h3><i class="fas fa-rocket"></i> Up / Down Trade</h3>
+            <label>💰 Trade Amount (₹) – min ₹10</label>
+            <input type="number" id="tradeAmount" class="amount-input" value="100" step="10" min="10">
+            <label>⏱️ Expiry (minutes)</label>
+            <div class="duration-buttons" id="durationGroup">
+                <button data-min="1" class="dur-btn">1 min</button>
+                <button data-min="2" class="dur-btn">2 min</button>
+                <button data-min="3" class="dur-btn">3 min</button>
+                <button data-min="5" class="dur-btn active">5 min</button>
+            </div>
+            <div class="trade-actions">
+                <button id="upBtn" class="btn-up"><i class="fas fa-arrow-up"></i> UP</button>
+                <button id="downBtn" class="btn-down"><i class="fas fa-arrow-down"></i> DOWN</button>
+            </div>
+            <div id="activeTradeBox" class="active-trade-info" style="display: none;">
+                <p><i class="fas fa-hourglass-half"></i> Active trade: <span id="tradeDirection"></span> ₹<span id="activeAmount"></span> on <span id="tradeStockName"></span></p>
+                <p>Entry: ₹<span id="entryPriceSpan"></span> | Ends in: <span id="countdownSpan">0</span> sec</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="stockModal" class="modal">
+    <div class="modal-card">
+        <h3>Select Asset</h3>
+        <input type="text" id="stockSearchInput" placeholder="Search by name or symbol..." style="width:100%; padding:12px; border-radius:40px; margin-bottom:16px; background:#1f2937; border:none; color:white;">
+        <div id="stockListModal"></div>
+        <button id="closeModalBtn" style="margin-top:16px; background:#1f2937; border:none; padding:10px; border-radius:40px; width:100%; cursor:pointer;">Close</button>
+    </div>
+</div>
+
+<script>
+    // ================================
+    // 1. CUSTOM CHART ENGINE (Candlestick, Bar, Line) – No external libraries
+    // ================================
+    class TradingFastChart {
+        constructor(canvasElement, assetName, initialPrice) {
+            this.canvas = canvasElement;
+            this.ctx = this.canvas.getContext('2d');
+            this.assetName = assetName;
+            this.currentType = 'candle';
+            this.candles = [];
+            this.currentCandle = null;
+            this.isLightTheme = false;
+            this.setupCanvas();
+            this.generateInitialCandles(initialPrice, 60);
+            this.startAnimation();
+        }
+
+        setupCanvas() {
+            const resizeObserver = new ResizeObserver(() => this.resize());
+            resizeObserver.observe(this.canvas.parentElement);
+            this.resize();
+        }
+
+        resize() {
+            const container = this.canvas.parentElement;
+            const rect = container.getBoundingClientRect();
+            this.canvas.width = rect.width;
+            this.canvas.height = rect.height;
+        }
+
+        startAnimation() {
+            const animate = () => {
+                this.draw();
+                requestAnimationFrame(animate);
+            };
+            animate();
+        }
+
+        generateInitialCandles(basePrice, count) {
+            let price = basePrice;
+            const now = Math.floor(Date.now() / 1000);
+            const minuteStep = 60;
+            this.candles = [];
+            for (let i = count; i >= 0; i--) {
+                const time = now - (i * minuteStep);
+                const change = (Math.random() - 0.5) * (basePrice * 0.015);
+                let open = price;
+                let close = Math.max(basePrice * 0.2, open + change);
+                let high = Math.max(open, close) + Math.random() * Math.abs(change) * 0.7;
+                let low = Math.min(open, close) - Math.random() * Math.abs(change) * 0.5;
+                high = Math.max(high, low + 0.01);
+                low = Math.min(low, open, close);
+                this.candles.push({ time, open, high, low, close });
+                price = close;
+            }
+            this.currentCandle = { ...this.candles[this.candles.length - 1] };
+        }
+
+        addPriceTick(price) {
+            const nowSeconds = Math.floor(Date.now() / 1000);
+            const currentMinuteStart = Math.floor(nowSeconds / 60) * 60;
+            
+            if (!this.currentCandle || this.currentCandle.time !== currentMinuteStart) {
+                if (this.currentCandle) {
+                    const lastCandle = this.candles[this.candles.length - 1];
+                    if (lastCandle && lastCandle.time === this.currentCandle.time) {
+                        lastCandle.high = this.currentCandle.high;
+                        lastCandle.low = this.currentCandle.low;
+                        lastCandle.close = this.currentCandle.close;
+                    }
+                }
+                this.currentCandle = {
+                    time: currentMinuteStart,
+                    open: price,
+                    high: price,
+                    low: price,
+                    close: price
+                };
+                this.candles.push(this.currentCandle);
+                if (this.candles.length > 200) this.candles.shift();
+            } else {
+                this.currentCandle.high = Math.max(this.currentCandle.high, price);
+                this.currentCandle.low = Math.min(this.currentCandle.low, price);
+                this.currentCandle.close = price;
+                const lastIdx = this.candles.length - 1;
+                if (this.candles[lastIdx] && this.candles[lastIdx].time === this.currentCandle.time) {
+                    this.candles[lastIdx] = { ...this.currentCandle };
+                }
+            }
+        }
+
+        setChartType(type) {
+            if (type === 'candle') this.currentType = 'candle';
+            else if (type === 'bar') this.currentType = 'bar';
+            else if (type === 'line') this.currentType = 'line';
+        }
+
+        resetChart(assetName, initialPrice) {
+            this.assetName = assetName;
+            this.generateInitialCandles(initialPrice, 60);
+        }
+
+        setTheme(theme) {
+            this.isLightTheme = (theme === 'light');
+        }
+
+        draw() {
+            if (!this.canvas || !this.ctx) return;
+            const w = this.canvas.width;
+            const h = this.canvas.height;
+            if (w === 0 || h === 0) return;
+            
+            const theme = this.getThemeColors();
+            this.ctx.fillStyle = theme.background;
+            this.ctx.fillRect(0, 0, w, h);
+            
+            if (this.candles.length === 0) return;
+            
+            let minPrice = Infinity, maxPrice = -Infinity;
+            for (let c of this.candles) {
+                minPrice = Math.min(minPrice, c.low);
+                maxPrice = Math.max(maxPrice, c.high);
+            }
+            const padding = (maxPrice - minPrice) * 0.05;
+            minPrice -= padding;
+            maxPrice += padding;
+            if (minPrice === maxPrice) { minPrice -= 1; maxPrice += 1; }
+            
+            const count = this.candles.length;
+            const candleWidth = w / count;
+            const halfCandle = candleWidth * 0.4;
+            const yMap = (price) => h - ((price - minPrice) / (maxPrice - minPrice)) * h;
+            
+            // Grid
+            this.ctx.strokeStyle = theme.gridColor;
+            this.ctx.lineWidth = 0.5;
+            const ySteps = 5;
+            for (let i = 0; i <= ySteps; i++) {
+                const y = (i / ySteps) * h;
+                this.ctx.beginPath();
+                this.ctx.moveTo(0, y);
+                this.ctx.lineTo(w, y);
+                this.ctx.stroke();
+            }
+            const xSteps = 6;
+            for (let i = 0; i <= xSteps; i++) {
+                const x = (i / xSteps) * w;
+                this.ctx.beginPath();
+                this.ctx.moveTo(x, 0);
+                this.ctx.lineTo(x, h);
+                this.ctx.stroke();
+            }
+            
+            if (this.currentType === 'candle') this.drawCandlesticks(candleWidth, halfCandle, yMap);
+            else if (this.currentType === 'bar') this.drawBars(candleWidth, halfCandle, yMap);
+            else if (this.currentType === 'line') this.drawLineChart(candleWidth, yMap);
+        }
+
+        drawCandlesticks(candleWidth, halfCandle, yMap) {
+            const theme = this.getThemeColors();
+            for (let i = 0; i < this.candles.length; i++) {
+                const c = this.candles[i];
+                const x = i * candleWidth;
+                const centerX = x + candleWidth / 2;
+                const openY = yMap(c.open);
+                const closeY = yMap(c.close);
+                const highY = yMap(c.high);
+                const lowY = yMap(c.low);
+                const isBullish = c.close >= c.open;
+                this.ctx.fillStyle = isBullish ? theme.upColor : theme.downColor;
+                this.ctx.fillRect(centerX - halfCandle, Math.min(openY, closeY), halfCandle * 2, Math.abs(closeY - openY));
+                this.ctx.beginPath();
+                this.ctx.moveTo(centerX, highY);
+                this.ctx.lineTo(centerX, lowY);
+                this.ctx.strokeStyle = isBullish ? theme.upColor : theme.downColor;
+                this.ctx.stroke();
+            }
+        }
+
+        drawBars(candleWidth, halfCandle, yMap) {
+            const theme = this.getThemeColors();
+            for (let i = 0; i < this.candles.length; i++) {
+                const c = this.candles[i];
+                const centerX = i * candleWidth + candleWidth / 2;
+                const openY = yMap(c.open);
+                const closeY = yMap(c.close);
+                const highY = yMap(c.high);
+                const lowY = yMap(c.low);
+                const isBullish = c.close >= c.open;
+                this.ctx.beginPath();
+                this.ctx.moveTo(centerX, highY);
+                this.ctx.lineTo(centerX, lowY);
+                this.ctx.strokeStyle = isBullish ? theme.upColor : theme.downColor;
+                this.ctx.stroke();
+                this.ctx.beginPath();
+                this.ctx.moveTo(centerX - halfCandle, openY);
+                this.ctx.lineTo(centerX, openY);
+                this.ctx.stroke();
+                this.ctx.beginPath();
+                this.ctx.moveTo(centerX, closeY);
+                this.ctx.lineTo(centerX + halfCandle, closeY);
+                this.ctx.stroke();
+            }
+        }
+
+        drawLineChart(candleWidth, yMap) {
+            const theme = this.getThemeColors();
+            this.ctx.beginPath();
+            this.ctx.strokeStyle = '#6ee7b7';
+            this.ctx.lineWidth = 2;
+            let first = true;
+            for (let i = 0; i < this.candles.length; i++) {
+                const x = i * candleWidth + candleWidth / 2;
+                const y = yMap(this.candles[i].close);
+                if (first) { this.ctx.moveTo(x, y); first = false; }
+                else this.ctx.lineTo(x, y);
+            }
+            this.ctx.stroke();
+            if (this.candles.length > 1) {
+                const lastX = (this.candles.length - 1) * candleWidth + candleWidth / 2;
+                const lastY = yMap(this.candles[this.candles.length - 1].close);
+                const firstX = candleWidth / 2;
+                const bottomY = this.canvas.height;
+                this.ctx.lineTo(lastX, bottomY);
+                this.ctx.lineTo(firstX, bottomY);
+                this.ctx.closePath();
+                this.ctx.fillStyle = 'rgba(110,231,183,0.1)';
+                this.ctx.fill();
+            }
+        }
+
+        getThemeColors() {
+            if (this.isLightTheme) {
+                return { background: '#ffffff', textColor: '#1e293b', gridColor: '#e2e8f0', upColor: '#26a69a', downColor: '#ef5350' };
+            } else {
+                return { background: '#151b26', textColor: '#eef2ff', gridColor: '#2a2e3a', upColor: '#26a69a', downColor: '#ef5350' };
+            }
+        }
+    }
+
+    // ================================
+    // 2. TRADING APPLICATION LOGIC
+    // ================================
+    const stocks = [
+        { name: "Bitcoin", symbol: "BTC", basePrice: 65000 },
+        { name: "Ethereum", symbol: "ETH", basePrice: 3400 },
+        { name: "Gold", symbol: "XAU", basePrice: 2150 },
+        { name: "Apple", symbol: "AAPL", basePrice: 175 },
+        { name: "EUR/USD", symbol: "EURUSD", basePrice: 1.08 },
+        { name: "Tesla", symbol: "TSLA", basePrice: 245 },
+        { name: "Amazon", symbol: "AMZN", basePrice: 185 },
+        { name: "Dogecoin", symbol: "DOGE", basePrice: 0.15 },
+        { name: "Silver", symbol: "XAG", basePrice: 28.5 },
+        { name: "Nasdaq", symbol: "NDX", basePrice: 18500 }
+    ];
+    
+    let currentStock = stocks[0];
+    let currentPrice = currentStock.basePrice;
+    let balance = 10000;
+    let activeTrade = null;
+    let selectedDuration = 5;
+    let tradeHistory = [];
+    let priceInterval = null;
+    
+    // DOM elements
+    const balanceSpan = document.getElementById('balanceDisplay');
+    const currentPriceSpan = document.getElementById('currentPriceLabel');
+    const tradeAmountInput = document.getElementById('tradeAmount');
+    const upBtn = document.getElementById('upBtn');
+    const downBtn = document.getElementById('downBtn');
+    const activeTradeBox = document.getElementById('activeTradeBox');
+    const tradeDirectionSpan = document.getElementById('tradeDirection');
+    const activeAmountSpan = document.getElementById('activeAmount');
+    const tradeStockNameSpan = document.getElementById('tradeStockName');
+    const entryPriceSpan = document.getElementById('entryPriceSpan');
+    const countdownSpan = document.getElementById('countdownSpan');
+    const stockSelectorBtn = document.getElementById('stockSelectorBtn');
+    const stockModal = document.getElementById('stockModal');
+    const stockSearchInput = document.getElementById('stockSearchInput');
+    const stockListModal = document.getElementById('stockListModal');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const selectedStockNameSpan = document.getElementById('selectedStockName');
+    const selectedStockSymSpan = document.getElementById('selectedStockSym');
+    const menuBtn = document.getElementById('menuBtn');
+    const dropdownMenu = document.getElementById('dropdownMenu');
+    const darkToggle = document.getElementById('darkModeToggle');
+    const chartTypeSelect = document.getElementById('chartTypeSelect');
+    
+    let chartManager = null;
+    
+    function updateBalanceUI() { balanceSpan.innerText = balance.toFixed(2); localStorage.setItem('traderBalance', balance); }
+    function loadBalance() { let saved = localStorage.getItem('traderBalance'); if(saved && !isNaN(parseFloat(saved))) balance = parseFloat(saved); else balance = 10000; updateBalanceUI(); }
+    function updateProfileStats() { const total = tradeHistory.length; const wins = tradeHistory.filter(t => t.result === 'win').length; const winRate = total ? ((wins/total)*100).toFixed(1) : 0; localStorage.setItem('totalTrades', total); localStorage.setItem('winRate', winRate); }
+    function addHistory(trade) { tradeHistory.unshift(trade); if (tradeHistory.length > 50) tradeHistory.pop(); localStorage.setItem('tradeHistoryFront', JSON.stringify(tradeHistory)); updateProfileStats(); }
+    function showToast(msg) { let toast = document.createElement('div'); toast.innerText = msg; toast.style.position = 'fixed'; toast.style.bottom = '20px'; toast.style.left = '50%'; toast.style.transform = 'translateX(-50%)'; toast.style.background = '#1e293b'; toast.style.color = 'white'; toast.style.padding = '12px 24px'; toast.style.borderRadius = '60px'; toast.style.zIndex = '9999'; document.body.appendChild(toast); setTimeout(() => toast.remove(), 2500); }
+    
+    // PRICE UPDATE – runs every 0.5 seconds, even during active trade
+    function updatePrice() {
+        const step = (Math.random() - 0.5) * (currentStock.basePrice * 0.008);
+        let newPrice = currentPrice + step;
+        newPrice = Math.max(currentStock.basePrice * 0.2, Math.min(currentStock.basePrice * 3, newPrice));
+        currentPrice = newPrice;
+        currentPriceSpan.innerText = `₹${currentPrice.toFixed(2)}`;
+        if (chartManager) chartManager.addPriceTick(currentPrice);
+    }
+    
+    function placeTrade(direction) {
+        if(activeTrade) { showToast('You have an active trade!'); return; }
+        let amount = parseFloat(tradeAmountInput.value);
+        if(isNaN(amount) || amount < 10) { showToast('Minimum trade amount is ₹10'); return; }
+        if(amount > balance) { showToast('Insufficient balance'); return; }
+        const entryPrice = currentPrice;
+        const expiryMinutes = selectedDuration;
+        const expiryTime = Date.now() + expiryMinutes * 60 * 1000;
+        activeTrade = { direction, amount, entryPrice, duration: expiryMinutes, expiryTime };
+        upBtn.disabled = downBtn.disabled = true;
+        tradeAmountInput.disabled = true;
+        activeTradeBox.style.display = 'block';
+        tradeDirectionSpan.innerText = direction;
+        activeAmountSpan.innerText = amount;
+        tradeStockNameSpan.innerText = currentStock.name;
+        entryPriceSpan.innerText = entryPrice.toFixed(2);
+        
+        const countInterval = setInterval(() => {
+            if(!activeTrade) { clearInterval(countInterval); return; }
+            const rem = Math.max(0, Math.floor((activeTrade.expiryTime - Date.now())/1000));
+            countdownSpan.innerText = rem;
+            if(rem <= 0) clearInterval(countInterval);
+        }, 1000);
+        
+        const timeoutId = setTimeout(() => {
+            if(activeTrade) {
+                const finalPrice = currentPrice;
+                const win = (direction === 'UP' && finalPrice > entryPrice) || (direction === 'DOWN' && finalPrice < entryPrice);
+                let profit = 0;
+                if(win) { profit = amount * 0.8; balance += profit; }
+                else { profit = -amount; balance -= amount; }
+                updateBalanceUI();
+                addHistory({ direction, amount, duration: expiryMinutes, result: win ? 'win' : 'loss', profit: profit, time: new Date().toISOString(), entryPrice, exitPrice: finalPrice, stock: currentStock.name });
+                activeTrade = null;
+                activeTradeBox.style.display = 'none';
+                upBtn.disabled = downBtn.disabled = false;
+                tradeAmountInput.disabled = false;
+                showToast(win ? `🎉 WIN! +₹${profit.toFixed(2)}` : `😞 LOSS! -₹${amount.toFixed(2)}`);
+            }
+        }, expiryMinutes * 60 * 1000);
+        activeTrade.timeoutId = timeoutId;
+        activeTrade.intervalId = countInterval;
+    }
+    
+    function changeStock(newStock) {
+        if(activeTrade) { showToast('Cannot change asset during active trade'); return; }
+        currentStock = newStock;
+        currentPrice = newStock.basePrice;
+        selectedStockNameSpan.innerText = newStock.name;
+        selectedStockSymSpan.innerText = `(${newStock.symbol})`;
+        currentPriceSpan.innerText = `₹${currentPrice.toFixed(2)}`;
+        if (chartManager) {
+            chartManager.resetChart(newStock.name, newStock.basePrice);
+            chartManager.setChartType(chartTypeSelect.value);
+        }
+        showToast(`Switched to ${newStock.name}`);
+    }
+    
+    function showStockModal() {
+        const renderStockList = (filter = '') => {
+            const term = filter.toLowerCase();
+            const filtered = stocks.filter(s => s.name.toLowerCase().includes(term) || s.symbol.toLowerCase().includes(term));
+            stockListModal.innerHTML = '';
+            filtered.forEach(s => {
+                const div = document.createElement('div');
+                div.innerHTML = `<span><strong>${s.name}</strong> (${s.symbol})</span><span>₹${s.basePrice.toFixed(2)}</span>`;
+                div.addEventListener('click', () => { changeStock(s); stockModal.style.display = 'none'; });
+                stockListModal.appendChild(div);
+            });
+            if(filtered.length === 0) stockListModal.innerHTML = '<div style="padding:12px; text-align:center;">No assets found</div>';
+        };
+        renderStockList('');
+        stockSearchInput.value = '';
+        stockSearchInput.oninput = (e) => renderStockList(e.target.value);
+        stockModal.style.display = 'flex';
+    }
+    
+    function applyDarkMode() {
+        const isDark = localStorage.getItem('darkMode') === 'true';
+        if (isDark) { 
+            document.body.classList.remove('light'); 
+            darkToggle.innerHTML = '<i class="fas fa-sun"></i>';
+        } else { 
+            document.body.classList.add('light'); 
+            darkToggle.innerHTML = '<i class="fas fa-moon"></i>';
+        }
+        if (chartManager) chartManager.setTheme(document.body.classList.contains('light') ? 'light' : 'dark');
+    }
+    
+    function loadSelectedStockFromStorage() {
+        const savedStockJson = localStorage.getItem('selectedStock');
+        if (savedStockJson) {
+            try {
+                const savedStock = JSON.parse(savedStockJson);
+                const matchedStock = stocks.find(s => s.symbol === savedStock.symbol || s.name === savedStock.name);
+                if (matchedStock && !activeTrade) {
+                    changeStock(matchedStock);
+                    localStorage.removeItem('selectedStock');
+                }
+            } catch(e) { console.warn(e); }
+        }
+    }
+    
+    function init() {
+        loadBalance();
+        const storedHistory = localStorage.getItem('tradeHistoryFront');
+        if(storedHistory) tradeHistory = JSON.parse(storedHistory);
+        updateProfileStats();
+        
+        const canvas = document.getElementById('priceCanvas');
+        chartManager = new TradingFastChart(canvas, currentStock.name, currentStock.basePrice);
+        chartManager.setChartType(chartTypeSelect.value);
+        applyDarkMode();
+        
+        // Fixed 0.5 second interval – always runs, even during active trade
+        if(priceInterval) clearInterval(priceInterval);
+        priceInterval = setInterval(updatePrice, 500);
+        
+        upBtn.addEventListener('click', () => placeTrade('UP'));
+        downBtn.addEventListener('click', () => placeTrade('DOWN'));
+        stockSelectorBtn.addEventListener('click', showStockModal);
+        closeModalBtn.addEventListener('click', () => stockModal.style.display = 'none');
+        chartTypeSelect.addEventListener('change', (e) => { if (chartManager) chartManager.setChartType(e.target.value); });
+        darkToggle.addEventListener('click', () => {
+            const currentlyDark = localStorage.getItem('darkMode') === 'true';
+            localStorage.setItem('darkMode', currentlyDark ? 'false' : 'true');
+            applyDarkMode();
+        });
+        menuBtn.addEventListener('click', (e) => { e.stopPropagation(); dropdownMenu.classList.toggle('show'); });
+        window.addEventListener('click', (e) => { if (!menuBtn.contains(e.target) && !dropdownMenu.contains(e.target)) dropdownMenu.classList.remove('show'); });
+        window.addEventListener('resize', () => { if(chartManager) chartManager.resize(); });
+        
+        document.querySelectorAll('.dur-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.dur-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedDuration = parseInt(btn.dataset.min);
+            });
+        });
+        
+        loadSelectedStockFromStorage();
+    }
+    
+    init();
+</script>
+</body>
+</html>

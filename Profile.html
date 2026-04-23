@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>TradingFast | Profile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0c12;
+            color: #eef2ff;
+            padding: 24px;
+            transition: background 0.3s, color 0.3s;
+        }
+        body.light {
+            background: #f5f7fb;
+            color: #1e293b;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .profile-card {
+            background: #151b26;
+            border-radius: 48px;
+            padding: 32px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            border: 1px solid #2a2e3a;
+        }
+        body.light .profile-card {
+            background: white;
+            border-color: #edf2f7;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+        }
+
+        /* Avatar section */
+        .avatar-section {
+            text-align: center;
+            margin-bottom: 32px;
+            position: relative;
+        }
+        .avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
+            border: 3px solid #6ee7b7;
+            transition: transform 0.2s;
+        }
+        body.light .avatar {
+            border-color: #4CAF50;
+        }
+        .avatar:hover {
+            transform: scale(1.02);
+        }
+        .edit-avatar-btn {
+            position: absolute;
+            bottom: 5px;
+            right: calc(50% - 50px);
+            background: #2e7d32;
+            color: white;
+            border-radius: 50%;
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 2px solid #151b26;
+            transition: 0.2s;
+        }
+        body.light .edit-avatar-btn {
+            border-color: white;
+        }
+        .edit-avatar-btn:hover {
+            background: #1e5a2a;
+        }
+
+        /* Form rows */
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid #2a2e3a;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        body.light .info-row {
+            border-color: #edf2f7;
+        }
+        .info-label {
+            font-weight: 600;
+            width: 130px;
+            color: #9ca3af;
+        }
+        body.light .info-label {
+            color: #4a5568;
+        }
+        .info-value {
+            flex: 1;
+            text-align: right;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 60px;
+            border: 1px solid #2a2e3a;
+            background: #1f2937;
+            color: #eef2ff;
+            font-family: inherit;
+            transition: 0.2s;
+        }
+        body.light input, body.light textarea, body.light select {
+            background: #f8fafc;
+            border-color: #e2e8f0;
+            color: #1e293b;
+        }
+        textarea {
+            border-radius: 24px;
+            resize: vertical;
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #6ee7b7;
+        }
+        body.light input:focus, body.light textarea:focus, body.light select:focus {
+            border-color: #4CAF50;
+        }
+
+        /* Stats row (non-editable) */
+        .stats-row {
+            background: #1f2937;
+            border-radius: 28px;
+            padding: 16px 20px;
+            margin: 16px 0;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        body.light .stats-row {
+            background: #f8fafc;
+        }
+        .stat-item {
+            text-align: center;
+            flex: 1;
+        }
+        .stat-label {
+            font-size: 0.75rem;
+            color: #9ca3af;
+        }
+        .stat-number {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        /* Toast notification */
+        .toast-save {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2e7d32;
+            color: white;
+            padding: 12px 28px;
+            border-radius: 60px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 2000;
+            animation: fadeInUp 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        body.light .toast-save {
+            background: #2e7d32;
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        /* Modal for avatar selection */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: #151b26;
+            border-radius: 48px;
+            padding: 32px;
+            width: 90%;
+            max-width: 420px;
+            text-align: center;
+            border: 1px solid #2a2e3a;
+        }
+        body.light .modal-content {
+            background: white;
+            border-color: #edf2f7;
+        }
+        .avatar-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 24px 0;
+        }
+        .avatar-option {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 32px;
+            object-fit: cover;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: 0.2s;
+        }
+        .avatar-option:hover {
+            transform: scale(1.02);
+            border-color: #6ee7b7;
+        }
+        body.light .avatar-option:hover {
+            border-color: #4CAF50;
+        }
+        .close-modal {
+            background: #1f2937;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #eef2ff;
+        }
+        body.light .close-modal {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+
+        /* Dark mode toggle button */
+        .dark-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #1f2937;
+            border: none;
+            border-radius: 40px;
+            padding: 10px 16px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            color: #facc15;
+            z-index: 100;
+        }
+        body.light .dark-toggle {
+            background: white;
+            color: #4a5568;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 24px;
+            color: #6ee7b7;
+            text-decoration: none;
+            text-align: center;
+            width: 100%;
+        }
+        body.light .back-link {
+            color: #4CAF50;
+        }
+
+        @media (max-width: 600px) {
+            body { padding: 16px; }
+            .profile-card { padding: 24px; }
+            .info-row { flex-direction: column; align-items: stretch; }
+            .info-label { width: 100%; }
+            .info-value { text-align: left; }
+            .stats-row { flex-direction: column; gap: 12px; }
+            .avatar-grid { gap: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <button class="dark-toggle" id="darkModeToggle"><i class="fas fa-sun"></i> Light Mode</button>
+    <div class="container">
+        <div class="profile-card">
+            <div class="avatar-section">
+                <img id="profileAvatar" class="avatar" src="profile1.png" alt="Profile" onerror="this.src='https://via.placeholder.com/120?text=User'">
+                <div class="edit-avatar-btn" id="editAvatarBtn">
+                    <i class="fas fa-camera"></i>
+                </div>
+            </div>
+
+            <h2 style="text-align: center; margin-bottom: 24px;">User Profile</h2>
+
+            <!-- Editable fields -->
+            <div class="info-row">
+                <div class="info-label"><i class="fas fa-user"></i> Username</div>
+                <div class="info-value"><input type="text" id="username" placeholder="Username" autocomplete="off"></div>
+            </div>
+            <div class="info-row">
+                <div class="info-label"><i class="fas fa-envelope"></i> Email</div>
+                <div class="info-value"><input type="email" id="email" placeholder="Email" autocomplete="off"></div>
+            </div>
+            <div class="info-row">
+                <div class="info-label"><i class="fas fa-phone"></i> Phone</div>
+                <div class="info-value"><input type="tel" id="phone" placeholder="Phone number" autocomplete="off"></div>
+            </div>
+            <div class="info-row">
+                <div class="info-label"><i class="fas fa-calendar-alt"></i> Date of Birth</div>
+                <div class="info-value"><input type="date" id="dob"></div>
+            </div>
+            <div class="info-row">
+                <div class="info-label"><i class="fas fa-map-marker-alt"></i> Location</div>
+                <div class="info-value"><input type="text" id="location" placeholder="City, Country" autocomplete="off"></div>
+            </div>
+            <div class="info-row">
+                <div class="info-label"><i class="fas fa-info-circle"></i> Bio</div>
+                <div class="info-value"><textarea id="bio" rows="2" placeholder="Tell us about yourself..."></textarea></div>
+            </div>
+
+            <!-- Read-only stats from trading activity -->
+            <div class="stats-row">
+                <div class="stat-item">
+                    <div class="stat-label">Total Trades</div>
+                    <div class="stat-number" id="totalTrades">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Win Rate</div>
+                    <div class="stat-number" id="winRate">0%</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Balance</div>
+                    <div class="stat-number" id="balance">₹0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Account Level</div>
+                    <div class="stat-number" id="level">Premium</div>
+                </div>
+            </div>
+
+            <a href="trading.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Trading</a>
+        </div>
+    </div>
+
+    <!-- Modal for avatar selection -->
+    <div id="avatarModal" class="modal">
+        <div class="modal-content">
+            <h3><i class="fas fa-images"></i> Choose Profile Picture</h3>
+            <div class="avatar-grid" id="avatarGrid">
+                <img src="profile1.png" class="avatar-option" data-img="profile1.png" onerror="this.src='https://via.placeholder.com/100?text=1'">
+                <img src="profile2.png" class="avatar-option" data-img="profile2.png" onerror="this.src='https://via.placeholder.com/100?text=2'">
+                <img src="profile3.png" class="avatar-option" data-img="profile3.png" onerror="this.src='https://via.placeholder.com/100?text=3'">
+                <img src="profile4.png" class="avatar-option" data-img="profile4.png" onerror="this.src='https://via.placeholder.com/100?text=4'">
+            </div>
+            <button class="close-modal" id="closeModalBtn">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // DOM elements
+        const avatarImg = document.getElementById('profileAvatar');
+        const editAvatarBtn = document.getElementById('editAvatarBtn');
+        const avatarModal = document.getElementById('avatarModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const avatarOptions = document.querySelectorAll('.avatar-option');
+        
+        const usernameInput = document.getElementById('username');
+        const emailInput = document.getElementById('email');
+        const phoneInput = document.getElementById('phone');
+        const dobInput = document.getElementById('dob');
+        const locationInput = document.getElementById('location');
+        const bioTextarea = document.getElementById('bio');
+
+        // Toast function
+        function showToast(message) {
+            const existingToast = document.querySelector('.toast-save');
+            if (existingToast) existingToast.remove();
+            const toast = document.createElement('div');
+            toast.className = 'toast-save';
+            toast.innerHTML = '<i class="fas fa-check-circle"></i> ' + message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 1800);
+        }
+
+        // Save all editable fields to localStorage
+        function saveAllFields() {
+            localStorage.setItem('profileUsername', usernameInput.value);
+            localStorage.setItem('profileEmail', emailInput.value);
+            localStorage.setItem('profilePhone', phoneInput.value);
+            localStorage.setItem('profileDob', dobInput.value);
+            localStorage.setItem('profileLocation', locationInput.value);
+            localStorage.setItem('profileBio', bioTextarea.value);
+            showToast('Changes saved');
+        }
+
+        // Load editable fields from localStorage
+        function loadEditableFields() {
+            usernameInput.value = localStorage.getItem('profileUsername') || 'trader@tradingfast';
+            emailInput.value = localStorage.getItem('profileEmail') || 'trader@tradingfast.com';
+            phoneInput.value = localStorage.getItem('profilePhone') || '+91 9876543210';
+            dobInput.value = localStorage.getItem('profileDob') || '1990-01-01';
+            locationInput.value = localStorage.getItem('profileLocation') || 'Mumbai, India';
+            bioTextarea.value = localStorage.getItem('profileBio') || 'Passionate trader | Crypto & Forex enthusiast';
+        }
+
+        // Load trading stats from localStorage (set by trading.html)
+        function loadTradingStats() {
+            const balance = localStorage.getItem('traderBalance');
+            document.getElementById('balance').innerText = balance ? `₹${parseFloat(balance).toFixed(2)}` : '₹10000.00';
+            const totalTrades = localStorage.getItem('totalTrades');
+            document.getElementById('totalTrades').innerText = totalTrades || '0';
+            const winRate = localStorage.getItem('winRate');
+            document.getElementById('winRate').innerText = winRate ? `${winRate}%` : '0%';
+        }
+
+        // Avatar handling
+        function openAvatarModal() {
+            avatarModal.classList.add('active');
+        }
+        function closeAvatarModal() {
+            avatarModal.classList.remove('active');
+        }
+        editAvatarBtn.addEventListener('click', openAvatarModal);
+        closeModalBtn.addEventListener('click', closeAvatarModal);
+        avatarModal.addEventListener('click', (e) => {
+            if (e.target === avatarModal) closeAvatarModal();
+        });
+
+        avatarOptions.forEach(opt => {
+            opt.addEventListener('click', () => {
+                const newSrc = opt.getAttribute('data-img');
+                avatarImg.src = newSrc;
+                localStorage.setItem('profileAvatar', newSrc);
+                closeAvatarModal();
+                showToast('Profile picture updated');
+            });
+        });
+
+        // Load saved avatar
+        const savedAvatar = localStorage.getItem('profileAvatar');
+        if (savedAvatar) avatarImg.src = savedAvatar;
+
+        // Auto-save on input
+        usernameInput.addEventListener('input', saveAllFields);
+        emailInput.addEventListener('input', saveAllFields);
+        phoneInput.addEventListener('input', saveAllFields);
+        dobInput.addEventListener('change', saveAllFields);
+        locationInput.addEventListener('input', saveAllFields);
+        bioTextarea.addEventListener('input', saveAllFields);
+
+        // Global dark mode sync (same key as trading.html)
+        const darkToggle = document.getElementById('darkModeToggle');
+        function applyDarkMode() {
+            const isDark = localStorage.getItem('darkMode') === 'true';
+            if (isDark) {
+                document.body.classList.remove('light');
+                darkToggle.innerHTML = '<i class="fas fa-sun"></i> Light Mode';
+            } else {
+                document.body.classList.add('light');
+                darkToggle.innerHTML = '<i class="fas fa-moon"></i> Dark Mode';
+            }
+        }
+        darkToggle.addEventListener('click', () => {
+            const currentlyDark = localStorage.getItem('darkMode') === 'true';
+            localStorage.setItem('darkMode', currentlyDark ? 'false' : 'true');
+            applyDarkMode();
+            window.dispatchEvent(new StorageEvent('storage', { key: 'darkMode' }));
+        });
+        applyDarkMode();
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'darkMode') applyDarkMode();
+            if (e.key === 'traderBalance' || e.key === 'totalTrades' || e.key === 'winRate') {
+                loadTradingStats();
+            }
+        });
+
+        // Initial load
+        loadEditableFields();
+        loadTradingStats();
+    </script>
+</body>
+</html>

@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>TradingFast | Trade History</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0c12;
+            color: #eef2ff;
+            padding: 24px;
+            transition: background 0.3s, color 0.3s;
+        }
+        body.light {
+            background: #f5f7fb;
+            color: #1e293b;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .history-card {
+            background: #151b26;
+            border-radius: 48px;
+            padding: 32px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            border: 1px solid #2a2e3a;
+        }
+        body.light .history-card {
+            background: white;
+            border-color: #edf2f7;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .filter-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            background: #1f2937;
+            border: none;
+            padding: 8px 24px;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #e2e8f0;
+        }
+        body.light .filter-btn {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+        .filter-btn.active {
+            background: #2e7d32;
+            color: white;
+        }
+        body.light .filter-btn.active {
+            background: #4CAF50;
+            color: white;
+        }
+        .history-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid #2a2e3a;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        body.light .history-item {
+            border-color: #edf2f7;
+        }
+        .trade-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .trade-direction {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        .trade-direction.UP { color: #6ee7b7; }
+        .trade-direction.DOWN { color: #fca5a5; }
+        body.light .trade-direction.UP { color: #2e7d32; }
+        body.light .trade-direction.DOWN { color: #c62828; }
+        .trade-amount {
+            font-size: 0.9rem;
+            color: #9ca3af;
+        }
+        body.light .trade-amount {
+            color: #6b7280;
+        }
+        .trade-result {
+            text-align: right;
+        }
+        .win-badge {
+            background: #1e3a2f;
+            color: #6ee7b7;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        .loss-badge {
+            background: #3e1a1a;
+            color: #fca5a5;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        body.light .win-badge {
+            background: #e0f2e9;
+            color: #2e7d32;
+        }
+        body.light .loss-badge {
+            background: #ffe6e5;
+            color: #c62828;
+        }
+        .profit-win {
+            color: #6ee7b7;
+            font-weight: 600;
+        }
+        .profit-loss {
+            color: #fca5a5;
+            font-weight: 600;
+        }
+        body.light .profit-win {
+            color: #2e7d32;
+        }
+        body.light .profit-loss {
+            color: #c62828;
+        }
+        .trade-date {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 48px;
+            color: #9ca3af;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 24px;
+            color: #6ee7b7;
+            text-decoration: none;
+            text-align: center;
+            width: 100%;
+        }
+        body.light .back-link {
+            color: #4CAF50;
+        }
+        .stats-summary {
+            display: flex;
+            justify-content: space-between;
+            background: #1f2937;
+            padding: 16px 20px;
+            border-radius: 60px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        body.light .stats-summary {
+            background: #f8fafc;
+        }
+        .stat-box {
+            text-align: center;
+            flex: 1;
+        }
+        .stat-label {
+            font-size: 0.8rem;
+            color: #9ca3af;
+        }
+        body.light .stat-label {
+            color: #6b7280;
+        }
+        .stat-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+        .dark-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #1f2937;
+            border: none;
+            border-radius: 40px;
+            padding: 10px 16px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            color: #facc15;
+            z-index: 100;
+        }
+        body.light .dark-toggle {
+            background: white;
+            color: #4a5568;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        @media (max-width: 600px) {
+            body { padding: 16px; }
+            .history-card { padding: 20px; }
+            .history-item { flex-direction: column; align-items: flex-start; }
+            .trade-result { text-align: left; margin-top: 8px; }
+        }
+    </style>
+</head>
+<body>
+    <button class="dark-toggle" id="darkModeToggle"><i class="fas fa-moon"></i> Light Mode</button>
+    <div class="container">
+        <div class="history-card">
+            <h2><i class="fas fa-clock"></i> Trade History</h2>
+            
+            <div class="stats-summary" id="statsSummary">
+                <div class="stat-box">
+                    <div class="stat-label">Total Trades</div>
+                    <div class="stat-value" id="statTotal">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Wins</div>
+                    <div class="stat-value" id="statWins">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Losses</div>
+                    <div class="stat-value" id="statLosses">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Win Rate</div>
+                    <div class="stat-value" id="statWinRate">0%</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Total P&L</div>
+                    <div class="stat-value" id="statPnL">₹0</div>
+                </div>
+            </div>
+            
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="win">Wins</button>
+                <button class="filter-btn" data-filter="loss">Losses</button>
+            </div>
+            
+            <div id="historyList" class="history-list">
+                <div class="empty-state">Loading trades...</div>
+            </div>
+            
+            <a href="trading.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Trading</a>
+        </div>
+    </div>
+
+    <script>
+        let tradeHistory = [];
+        let currentFilter = 'all';
+        
+        // Default dark mode: true (dark mode on first load)
+        if (localStorage.getItem('darkMode') === null) {
+            localStorage.setItem('darkMode', 'true');
+        }
+        
+        function loadTradeHistory() {
+            const stored = localStorage.getItem('tradeHistoryFront');
+            if (stored) {
+                tradeHistory = JSON.parse(stored);
+            } else {
+                tradeHistory = [];
+            }
+            updateStats();
+            renderHistory();
+        }
+        
+        function updateStats() {
+            const total = tradeHistory.length;
+            const wins = tradeHistory.filter(t => t.result === 'win').length;
+            const losses = total - wins;
+            const winRate = total ? ((wins / total) * 100).toFixed(1) : 0;
+            const totalPnL = tradeHistory.reduce((sum, t) => sum + t.profit, 0);
+            
+            document.getElementById('statTotal').innerText = total;
+            document.getElementById('statWins').innerText = wins;
+            document.getElementById('statLosses').innerText = losses;
+            document.getElementById('statWinRate').innerText = `${winRate}%`;
+            const pnlColor = totalPnL >= 0 ? '#6ee7b7' : '#fca5a5';
+            const lightPnlColor = totalPnL >= 0 ? '#2e7d32' : '#c62828';
+            const isDark = document.body.classList.contains('light') ? false : true;
+            document.getElementById('statPnL').innerHTML = `<span style="color:${isDark ? pnlColor : lightPnlColor}">${totalPnL >= 0 ? '+' : ''}₹${totalPnL.toFixed(2)}</span>`;
+        }
+        
+        function renderHistory() {
+            const container = document.getElementById('historyList');
+            let filtered = [...tradeHistory];
+            
+            if (currentFilter === 'win') {
+                filtered = filtered.filter(t => t.result === 'win');
+            } else if (currentFilter === 'loss') {
+                filtered = filtered.filter(t => t.result === 'loss');
+            }
+            
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-chart-line"></i> No trades found</div>';
+                return;
+            }
+            
+            container.innerHTML = filtered.map(trade => {
+                const isWin = trade.result === 'win';
+                const profitAmount = trade.profit;
+                const profitDisplay = profitAmount >= 0 ? `+₹${profitAmount.toFixed(2)}` : `-₹${Math.abs(profitAmount).toFixed(2)}`;
+                const tradeDate = new Date(trade.time);
+                const formattedDate = tradeDate.toLocaleDateString() + ' ' + tradeDate.toLocaleTimeString();
+                
+                return `
+                    <div class="history-item">
+                        <div class="trade-info">
+                            <div class="trade-direction ${trade.direction}">${trade.direction}</div>
+                            <div class="trade-amount">Amount: ₹${trade.amount} | Duration: ${trade.duration} min</div>
+                            <div class="trade-date">${formattedDate}</div>
+                        </div>
+                        <div class="trade-result">
+                            <div class="${isWin ? 'win-badge' : 'loss-badge'}">${isWin ? 'WIN' : 'LOSS'}</div>
+                            <div class="${isWin ? 'profit-win' : 'profit-loss'}" style="margin-top: 8px;">${profitDisplay}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.dataset.filter;
+                renderHistory();
+            });
+        });
+        
+        // Dark mode toggle and sync
+        const darkToggle = document.getElementById('darkModeToggle');
+        
+        function applyDarkMode() {
+            const isDark = localStorage.getItem('darkMode') === 'true';
+            if (isDark) {
+                document.body.classList.remove('light');
+                darkToggle.innerHTML = '<i class="fas fa-sun"></i> Light Mode';
+            } else {
+                document.body.classList.add('light');
+                darkToggle.innerHTML = '<i class="fas fa-moon"></i> Dark Mode';
+            }
+            updateStats(); // Refresh P&L color
+            renderHistory(); // Refresh list colors
+        }
+        
+        function setDarkMode(isDark) {
+            localStorage.setItem('darkMode', isDark ? 'true' : 'false');
+            applyDarkMode();
+            window.dispatchEvent(new StorageEvent('storage', { key: 'darkMode', newValue: isDark ? 'true' : 'false' }));
+        }
+        
+        darkToggle.addEventListener('click', () => {
+            const currentlyDark = localStorage.getItem('darkMode') === 'true';
+            setDarkMode(!currentlyDark);
+        });
+        
+        applyDarkMode();
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'darkMode') applyDarkMode();
+        });
+        
+        loadTradeHistory();
+        
+        // Listen for updates from trading page
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'tradeHistoryFront') {
+                loadTradeHistory();
+            }
+        });
+    </script>
+</body>
+</html>

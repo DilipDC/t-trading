@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>TradingFast | Stocks & Assets</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0c12;
+            color: #eef2ff;
+            padding: 24px;
+            transition: background 0.3s, color 0.3s;
+        }
+        body.light {
+            background: #f5f7fb;
+            color: #1e293b;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .stocks-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, #6ee7b7, #4CAF50);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        body.light h1 {
+            background: linear-gradient(135deg, #2e7d32, #4CAF50);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+        .stocks-card {
+            background: #151b26;
+            border-radius: 48px;
+            padding: 32px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            border: 1px solid #2a2e3a;
+        }
+        body.light .stocks-card {
+            background: white;
+            border-color: #edf2f7;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+        }
+        .search-bar {
+            margin-bottom: 24px;
+            position: relative;
+        }
+        .search-bar input {
+            width: 100%;
+            padding: 14px 20px;
+            border-radius: 60px;
+            border: 1px solid #2a2e3a;
+            background: #1f2937;
+            color: #eef2ff;
+            font-size: 1rem;
+            padding-left: 48px;
+        }
+        body.light .search-bar input {
+            background: #f8fafc;
+            border-color: #e2e8f0;
+            color: #1e293b;
+        }
+        .search-bar i {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        .stat-card {
+            background: #1f2937;
+            border-radius: 28px;
+            padding: 16px;
+            text-align: center;
+        }
+        body.light .stat-card {
+            background: #f8fafc;
+        }
+        .stat-label {
+            font-size: 0.8rem;
+            color: #9ca3af;
+            margin-bottom: 8px;
+        }
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        .stocks-table {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 14px 12px;
+            text-align: left;
+            border-bottom: 1px solid #2a2e3a;
+        }
+        body.light th, body.light td {
+            border-color: #edf2f7;
+        }
+        th {
+            color: #6ee7b7;
+            font-weight: 600;
+        }
+        body.light th {
+            color: #4CAF50;
+        }
+        .clickable-row {
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .clickable-row:hover {
+            background: #1f2937;
+        }
+        body.light .clickable-row:hover {
+            background: #f1f5f9;
+        }
+        .stock-symbol {
+            font-weight: 700;
+        }
+        .stock-price {
+            font-weight: 600;
+        }
+        .price-up {
+            color: #6ee7b7;
+        }
+        .price-down {
+            color: #fca5a5;
+        }
+        body.light .price-up {
+            color: #2e7d32;
+        }
+        body.light .price-down {
+            color: #c62828;
+        }
+        .btn-refresh {
+            background: #2e7d32;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 40px;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+        .btn-refresh:hover {
+            background: #1e5a2a;
+        }
+        .dark-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #1f2937;
+            border: none;
+            border-radius: 40px;
+            padding: 10px 16px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            color: #facc15;
+            z-index: 100;
+        }
+        body.light .dark-toggle {
+            background: white;
+            color: #4a5568;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 24px;
+            color: #6ee7b7;
+            text-decoration: none;
+            text-align: center;
+            width: 100%;
+        }
+        body.light .back-link {
+            color: #4CAF50;
+        }
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2e7d32;
+            color: white;
+            padding: 12px 28px;
+            border-radius: 60px;
+            font-weight: 500;
+            z-index: 2000;
+            animation: fadeInUp 0.3s ease;
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+        @media (max-width: 768px) {
+            body { padding: 16px; }
+            .stocks-card { padding: 20px; }
+            th, td { padding: 10px 8px; font-size: 0.85rem; }
+            .stat-value { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+    <button class="dark-toggle" id="darkModeToggle"><i class="fas fa-sun"></i> Light Mode</button>
+    <div class="container">
+        <div class="stocks-header">
+            <h1><i class="fas fa-chart-line"></i> Stocks & Assets</h1>
+            <button id="refreshPricesBtn" class="btn-refresh"><i class="fas fa-sync-alt"></i> Refresh All Prices</button>
+        </div>
+        
+        <div class="stocks-card">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Assets</div>
+                    <div class="stat-value" id="totalAssets">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Market Cap (Billions)</div>
+                    <div class="stat-value" id="totalMarketCap">₹0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">24h Volume</div>
+                    <div class="stat-value" id="totalVolume">₹0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Active Assets</div>
+                    <div class="stat-value" id="activeAssets">0</div>
+                </div>
+            </div>
+            
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search by name or symbol...">
+            </div>
+            
+            <div class="stocks-table">
+                <table id="stocksTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Symbol</th>
+                            <th>Price (₹)</th>
+                            <th>24h Change</th>
+                            <th>Volume</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stocksTableBody">
+                        <tr><td colspan="6" style="text-align:center;">Loading stocks...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <a href="trading.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Trading</a>
+        </div>
+    </div>
+
+    <script>
+        let stocks = [
+            { id: 1, name: "Bitcoin", symbol: "BTC", price: 65000, change: 2.5, volume: 28500000000, marketCap: 1270000000000 },
+            { id: 2, name: "Ethereum", symbol: "ETH", price: 3400, change: -1.2, volume: 15200000000, marketCap: 408000000000 },
+            { id: 3, name: "Gold", symbol: "XAU", price: 2150, change: 0.8, volume: 5800000000, marketCap: 13000000000000 },
+            { id: 4, name: "Apple", symbol: "AAPL", price: 175, change: 1.5, volume: 8900000000, marketCap: 2750000000000 },
+            { id: 5, name: "EUR/USD", symbol: "EURUSD", price: 1.08, change: -0.3, volume: 4200000000, marketCap: 0 },
+            { id: 6, name: "Tesla", symbol: "TSLA", price: 245, change: 3.2, volume: 12500000000, marketCap: 780000000000 },
+            { id: 7, name: "Amazon", symbol: "AMZN", price: 185, change: -0.5, volume: 6700000000, marketCap: 1920000000000 },
+            { id: 8, name: "Dogecoin", symbol: "DOGE", price: 0.15, change: 5.8, volume: 890000000, marketCap: 21000000000 },
+            { id: 9, name: "Silver", symbol: "XAG", price: 28.5, change: 1.2, volume: 1200000000, marketCap: 168000000000 },
+            { id: 10, name: "Nasdaq", symbol: "NDX", price: 18500, change: -0.8, volume: 3400000000, marketCap: 21500000000000 }
+        ];
+        
+        let searchTerm = '';
+        
+        function showToast(message) {
+            const existingToast = document.querySelector('.toast');
+            if (existingToast) existingToast.remove();
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = '<i class="fas fa-check-circle"></i> ' + message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2000);
+        }
+        
+        function updateStats() {
+            const total = stocks.length;
+            const totalMarketCap = stocks.reduce((sum, s) => sum + (s.marketCap || 0), 0);
+            const totalVolume = stocks.reduce((sum, s) => sum + (s.volume || 0), 0);
+            const active = stocks.filter(s => s.price > 0).length;
+            
+            document.getElementById('totalAssets').innerText = total;
+            const formattedMarketCap = (totalMarketCap / 1000000000).toFixed(1);
+            document.getElementById('totalMarketCap').innerHTML = `₹${formattedMarketCap}B`;
+            const formattedVolume = (totalVolume / 1000000000).toFixed(1);
+            document.getElementById('totalVolume').innerHTML = `₹${formattedVolume}B`;
+            document.getElementById('activeAssets').innerText = active;
+        }
+        
+        function refreshPrices() {
+            stocks = stocks.map(stock => {
+                const randomChange = (Math.random() - 0.5) * 6;
+                const newPrice = stock.price * (1 + randomChange / 100);
+                const newChange = randomChange;
+                return {
+                    ...stock,
+                    price: parseFloat(newPrice.toFixed(2)),
+                    change: parseFloat(newChange.toFixed(2))
+                };
+            });
+            renderStocksTable();
+            showToast('All prices refreshed!');
+        }
+        
+        function selectStockAndGoToTrading(stock) {
+            // Save selected stock to localStorage for trading.html to read
+            const stockToSave = {
+                name: stock.name,
+                symbol: stock.symbol,
+                basePrice: stock.price
+            };
+            localStorage.setItem('selectedStock', JSON.stringify(stockToSave));
+            // Redirect to trading page
+            window.location.href = 'trading.html';
+        }
+        
+        function renderStocksTable() {
+            const tbody = document.getElementById('stocksTableBody');
+            let filteredStocks = stocks.filter(s => 
+                s.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                s.symbol.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            
+            if (filteredStocks.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No stocks found</td></tr>';
+                updateStats();
+                return;
+            }
+            
+            tbody.innerHTML = filteredStocks.map((stock, index) => {
+                const changeClass = stock.change >= 0 ? 'price-up' : 'price-down';
+                const changeSign = stock.change >= 0 ? '+' : '';
+                const volumeInBillions = (stock.volume / 1000000000).toFixed(1);
+                
+                return `
+                    <tr class="clickable-row" data-stock-id="${stock.id}">
+                        <td>${index + 1}</td>
+                        <td><strong>${stock.name}</strong></td>
+                        <td class="stock-symbol">${stock.symbol}</td>
+                        <td class="stock-price">₹${stock.price.toFixed(2)}</td>
+                        <td class="${changeClass}">${changeSign}${stock.change}%</td>
+                        <td>₹${volumeInBillions}B</td>
+                    </tr>
+                `;
+            }).join('');
+            
+            // Add click event to each row (entire row clickable)
+            document.querySelectorAll('.clickable-row').forEach(row => {
+                row.addEventListener('click', () => {
+                    const stockId = parseInt(row.dataset.stockId);
+                    const stock = stocks.find(s => s.id === stockId);
+                    if (stock) selectStockAndGoToTrading(stock);
+                });
+            });
+            
+            updateStats();
+        }
+        
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            renderStocksTable();
+        });
+        
+        document.getElementById('refreshPricesBtn').addEventListener('click', refreshPrices);
+        
+        // Dark mode
+        const darkToggle = document.getElementById('darkModeToggle');
+        if (localStorage.getItem('darkMode') === null) localStorage.setItem('darkMode', 'true');
+        
+        function applyDarkMode() {
+            const isDark = localStorage.getItem('darkMode') === 'true';
+            if (isDark) {
+                document.body.classList.remove('light');
+                darkToggle.innerHTML = '<i class="fas fa-sun"></i> Light Mode';
+            } else {
+                document.body.classList.add('light');
+                darkToggle.innerHTML = '<i class="fas fa-moon"></i> Dark Mode';
+            }
+        }
+        darkToggle.addEventListener('click', () => {
+            const currentlyDark = localStorage.getItem('darkMode') === 'true';
+            localStorage.setItem('darkMode', currentlyDark ? 'false' : 'true');
+            applyDarkMode();
+            window.dispatchEvent(new StorageEvent('storage', { key: 'darkMode' }));
+        });
+        applyDarkMode();
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'darkMode') applyDarkMode();
+        });
+        
+        renderStocksTable();
+        setInterval(refreshPrices, 30000);
+    </script>
+</body>
+</html>
